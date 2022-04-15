@@ -11,8 +11,8 @@ class ChainAccess {
         ChainAccess.address = address;
     }
     
-    static async createPoll(question, options) {
-        let response = await ChainAccess.contract.methods.createPoll(question, options)
+    static async createPoll(question, startTime, endTime, options) {
+        let response = await ChainAccess.contract.methods.createPoll(question,startTime, endTime, options)
             .send({from: this.address});
         return response;
     }
@@ -27,6 +27,8 @@ class ChainAccess {
                 id: pollId,
                 address: pollResp.creator,
                 question: pollResp.question,
+                startTime: pollResp.startTime,
+                endTime: pollResp.endTime,
                 options: []
             }
             let allVotes = 0;

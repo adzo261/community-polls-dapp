@@ -17,6 +17,7 @@ import "./CreatePoll.css";
 const CreatePoll = () => {
     const [pollPanelStatus, setPollPanelStatus] = useState(false);
     const [question, setQuestion] = useState();
+    const [duration, setDuration] = useState();
     const [option1, setOption1] = useState();
     const [option2, setOption2] = useState();
     const [option3, setOption3] = useState();
@@ -50,13 +51,21 @@ const CreatePoll = () => {
         setQuestion(event.target.value);
     }
 
+    const onDurationChange = event => {
+        setDuration(event.target.value);
+    }
+
     const publishPoll = async () => {
-        if (!(question && option1 && option2 && option3 && option4)) {
+        if (!(question && option1 && option2 && option3 && option4 && duration)) {
             setPollStatus({published: false, error: "Please fill all the fields"});
             return;
         }
+        let startTime = Math.floor(Date.now()/1000);
+        let endTime = startTime + duration*60;
         await ChainAccess.createPoll(
-            question, 
+            question,
+            startTime, 
+            endTime,
             [{option: option1, votes: 0}, 
             {option: option2, votes: 0}, 
             {option: option3, votes: 0}, 
@@ -64,7 +73,7 @@ const CreatePoll = () => {
         )
         resetPollStates();
         setPollStatus({published: true});
-        
+        togglePollPanel();
     }
 
     const resetPollStates = () => {
@@ -73,6 +82,7 @@ const CreatePoll = () => {
         setOption2("");
         setOption3("");
         setOption4("");
+        setDuration(0);
     }
 
     const closeSnackbar =() => {
@@ -107,12 +117,12 @@ const CreatePoll = () => {
                         background:"linear-gradient(to right top, #ecd2e1, #e8d2e6, #e2d3ea, #dcd4ee, #d4d5f1, #cdd8f5, #c7dcf7, #c0dff8, #bbe5f9, #b8eaf8, #b8f0f5, #bbf4f0)",
                     }}>
                     
-                     <Grid container justifyContent={"space-between"}>
-                            <h3>Create a new poll</h3>
-                            <IconButton sx={{color: "#eb2f5b", ":hover": {background: "none"},}} onClick={togglePollPanel}>
-                                <CloseIcon/>
-                            </IconButton>
-                        </Grid>
+                    <Grid container justifyContent={"space-between"}>
+                        <h3>Create a new poll</h3>
+                        <IconButton sx={{color: "#eb2f5b", ":hover": {background: "none"},}} onClick={togglePollPanel}>
+                            <CloseIcon/>
+                        </IconButton>
+                    </Grid>
                     <FormControl fullWidth>
                         <TextField
                             fullWidth
@@ -178,7 +188,15 @@ const CreatePoll = () => {
                                 />
                             </Grid>
                         </Grid>
-        
+                        <TextField
+                            label="Poll duration in mins"
+                            variant="standard"
+                            type="number"
+                            sx={{...textFieldStyles, width: "11rem"}}
+                            value={duration}
+                            onChange={onDurationChange}
+                            required
+                        />
                         <Button variant="contained"  
                         sx={{
                             width: "8rem", 

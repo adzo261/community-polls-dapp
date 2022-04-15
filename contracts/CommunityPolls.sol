@@ -11,6 +11,8 @@ contract CommunityPolls {
     uint id;
     address creator;
     string question;
+    uint startTime;
+    uint endTime;
   }
 
   mapping(uint => Poll) public pollIdToPoll;
@@ -20,12 +22,14 @@ contract CommunityPolls {
   event PollCreated(uint id, address creator, string question, Option[] options);
   event PollVoted(uint id, address voter, uint optionIndex);
 
-  function createPoll(string memory _question, Option[] memory _options) public {
+  function createPoll(string memory _question, uint _startTime, uint _endTime, Option[] memory _options) public {
     pollsCount++;
     Poll memory _poll = Poll({
       id: pollsCount,
       creator: msg.sender,
-      question: _question
+      question: _question,
+      startTime: _startTime,
+      endTime: _endTime
     });
     pollIdToPoll[pollsCount] = _poll;
     for(uint i = 0;i < _options.length;i++) {
@@ -46,6 +50,8 @@ contract CommunityPolls {
 
   function vote(uint _pollId, uint _optionIndex) public {
     
+    //Poll must not be expired
+    require(pollIdToPoll[_pollId].startTime <= block.timestamp && pollIdToPoll[_pollId].endTime >= block.timestamp);
     //Creator cannot vote own poll
     require(msg.sender != pollIdToPoll[_pollId].creator );
     //pollId must exist
@@ -54,6 +60,7 @@ contract CommunityPolls {
     require(_optionIndex < pollIdToOptions[_pollId].length);
     //Voter cannot vote same poll twice
     require(!hasVoted(_pollId));
+
 
     pollIdToOptions[_pollId][_optionIndex].votes++;
     addressToVotedPolls[msg.sender].push(_pollId);

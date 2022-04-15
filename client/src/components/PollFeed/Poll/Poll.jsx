@@ -10,12 +10,14 @@ import Alert from '@mui/material/Alert';
 import PollIcon from '@mui/icons-material/Poll';
 import "./Poll.css";
 import ChainAccess from "../../../api/chain-access";
+import Countdown from 'react-countdown';
 import { withTheme } from "@emotion/react";
 import { fontWeight } from "@mui/system";
 
 
 const Poll = ({poll}) => {
 
+    const [pollExired, setPollExpired] = useState(poll.endTime <= Math.floor(Date.now()/1000));
     const getOptionStyles = (percentage, voted = false) => {
         const color = voted ? "green" : "black";
         return {
@@ -73,11 +75,16 @@ const Poll = ({poll}) => {
                                 Poll created by {poll.address}
                             </div> 
                         </Grid>
-                         <Grid item xs={12}>
-                            <div style={{fontWeight: "400", color: "black"}}>
-                               Poll ends in 02:23
-                            </div> 
-                        </Grid>
+                        {   !pollExired &&
+                            <Grid item xs={12}>
+                                <div style={{fontWeight: "400", color: "black"}}>
+                                    Poll ends in <Countdown 
+                                        date={new Date(poll.endTime * 1000)} 
+                                        onComplete={() => {setPollExpired(true)}}
+                                    />
+                                </div> 
+                            </Grid>
+                        }
                     </Grid>
                 </Paper>
                 </Container>
